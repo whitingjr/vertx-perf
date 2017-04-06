@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -25,11 +26,11 @@ public class RouterHttpVariableBodySize extends AbstractVerticle {
       router.post("/nonblockingform").blockingHandler(routingContext -> {
          String body = routingContext.getBodyAsString("UTF-8");
          int size = body.length();
-         int bs = Integer.parseInt(routingContext.request().getHeader("content-length"));
+         int bs = Integer.parseInt(routingContext.request().getHeader(HttpHeaders.CONTENT_LENGTH));
          boolean equal = size == bs;
          assert size == bs: String.format("Comparing the size of the body string size [%1$d] and content length [%2$d] showed a mismatch. They should be identical.",  size, body.length());
          if (equal){
-            routingContext.response().putHeader("content-type", "text/html");
+            routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html");
             routingContext.response().setStatusCode(200).end("<html><body><h1>Thank you for the message!</h1></body></html>");
 //            System.out.println("Non-Blocking Success");
          } else {
@@ -40,11 +41,11 @@ public class RouterHttpVariableBodySize extends AbstractVerticle {
       router.post("/blockingform").handler (handler -> {
          Buffer b = handler.getBody();
          int size = b.length();
-         int bs = Integer.parseInt(handler.request().getHeader("content-length"));
+         int bs = Integer.parseInt(handler.request().getHeader(HttpHeaders.CONTENT_LENGTH));
          boolean equal = size == bs; 
          assert equal: String.format("Comparing the size of the body string size [%1$d] and content length [%2$d] showed a mismatch. They should be identical.",  size, b.length());
          if (equal){
-            handler.response().putHeader("content-type", "text/html");
+            handler.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html");
             handler.response().setStatusCode(200).end("<html><body><h1>Thank you for the message!</h1></body></html>");
 //            System.out.println("Blocking Success");
          } else {
@@ -55,7 +56,7 @@ public class RouterHttpVariableBodySize extends AbstractVerticle {
 
       router.route().failureHandler(fh -> {
          System.out.println("Failure" + fh.failure().getMessage());
-         fh.response().putHeader("content-type", "text/html");
+         fh.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html");
          fh.response().setStatusCode(500).end(String.format("barf [%1$s]",fh.failure().getMessage()));
       });
       vertx.createHttpServer().requestHandler(router::accept).listen(port, host);
