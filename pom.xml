@@ -1,13 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>io.vertx</groupId>
   <artifactId>vertx-perf</artifactId>
   <version>1.0.0-SNAPSHOT</version>
-
+  <properties>
+    <vertx.version>3.3.3</vertx.version>
+    <fabric8.vertx.plugin.version>1.0.0</fabric8.vertx.plugin.version>
+    <main.verticle>io.vertx.perf.web.RouterHttpVariableBodySize</main.verticle>
+  </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-dependencies</artifactId>
+        <version>${vertx.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>io.vertx</groupId>
@@ -15,28 +28,28 @@
       <version>3.4.2-SNAPSHOT-direct</version>
       <exclusions>
         <exclusion>
-          <groupId>io.netty</groupId>
           <artifactId>netty-common</artifactId>
+          <groupId>io.netty</groupId>
         </exclusion>
         <exclusion>
-          <groupId>io.netty</groupId>
           <artifactId>netty-buffer</artifactId>
+          <groupId>io.netty</groupId>
         </exclusion>
         <exclusion>
-          <groupId>io.netty</groupId>
           <artifactId>netty-transport</artifactId>
+          <groupId>io.netty</groupId>
         </exclusion>
         <exclusion>
-          <groupId>io.netty</groupId>
           <artifactId>netty-handler</artifactId>
+          <groupId>io.netty</groupId>
         </exclusion>
         <exclusion>
-          <groupId>io.netty</groupId>
           <artifactId>netty-codec-http</artifactId>
+          <groupId>io.netty</groupId>
         </exclusion>
         <exclusion>
-          <groupId>io.netty</groupId>
           <artifactId>netty-codec</artifactId>
+          <groupId>io.netty</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -48,33 +61,24 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-all</artifactId>
-      <!-- version>4.0.36.Final</version-->
       <version>4.1.10.Final-SNAPSHOT</version>
     </dependency>
   </dependencies>
-
-  <properties>
-    <!-- the main verticle class name -->
-    <!-- main.verticle>io.vertx.perf.core.http.SimpleServer</main.verticle-->
-    <!-- <main.verticle>io.vertx.perf.web.SimpleHttp</main.verticle>
-    <main.verticle>io.vertx.perf.web.SimpleStatic</main.verticle> -->
-    <!-- main.verticle>io.vertx.perf.web.SimpleHttpVariableBodySize</main.verticle-->
-    <main.verticle>io.vertx.perf.web.RouterHttpVariableBodySize</main.verticle>
-  </properties>
-
   <repositories>
     <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
       <id>oss.sonatype.org-snapshot</id>
       <url>http://oss.sonatype.org/content/repositories/snapshots</url>
-      <releases><enabled>false</enabled></releases>
-      <snapshots><enabled>true</enabled></snapshots>
     </repository>
   </repositories>
-
   <build>
     <pluginManagement>
       <plugins>
-        <!-- We specify the Maven compiler plugin as we need to set it to Java 1.8 -->
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.1</version>
@@ -85,15 +89,8 @@
         </plugin>
       </plugins>
     </pluginManagement>
-
-    <!--
-    You only need the part below if you want to build your application into a fat executable jar.
-    This is a jar that contains all the dependencies required to run it, so you can just run it with
-    java -jar
-    -->
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <version>2.3</version>
         <executions>
@@ -114,14 +111,26 @@
                   <resource>META-INF/services/io.vertx.core.spi.VerticleFactory</resource>
                 </transformer>
               </transformers>
-              <artifactSet>
-              </artifactSet>
+              <artifactSet></artifactSet>
               <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-fat.jar</outputFile>
             </configuration>
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>vertx-maven-plugin</artifactId>
+        <version>${fabric8.vertx.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>vmp-init-package</id>
+            <goals>
+              <goal>initialize</goal>
+              <goal>package</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
-
 </project>
