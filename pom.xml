@@ -12,7 +12,7 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
-      <version>3.2.1</version>
+      <version>3.4.2-SNAPSHOT-direct</version>
       <exclusions>
         <exclusion>
           <groupId>io.netty</groupId>
@@ -48,7 +48,8 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-all</artifactId>
-      <version>4.0.36.Final</version>
+      <!-- version>4.0.36.Final</version-->
+      <version>4.1.10.Final-SNAPSHOT</version>
     </dependency>
   </dependencies>
 
