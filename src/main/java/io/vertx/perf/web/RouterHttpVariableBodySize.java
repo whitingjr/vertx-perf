@@ -14,7 +14,6 @@ public class RouterHttpVariableBodySize extends AbstractVerticle {
 
    private static final Logger logger = Logger.getLogger(RouterHttpVariableBodySize.class.getName());
    private static final String message = "<html><body><h1>Thank you for the message!</h1></body></html>";
-   private static final String mlength = new Integer(message.length()).toString();
    private static final String TEXT_HTML = "text/html";
    private static final String UTF_8 = "UTF-8";
 
@@ -35,9 +34,7 @@ public class RouterHttpVariableBodySize extends AbstractVerticle {
          assert size == bs: String.format("Comparing the size of the body string size [%1$d] and content length [%2$d] showed a mismatch. They should be identical.",  size, body.length());
          if (equal){
             routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, TEXT_HTML);
-            routingContext.response().putHeader(HttpHeaders.CONTENT_LENGTH, mlength);
             routingContext.response().setStatusCode(200).end(message);
-//            System.out.println("Non-Blocking Success");
          } else {
             routingContext.fail(new Exception("Server detected the request body does not match the expected length as content-length indicates."));
             routingContext.next();
