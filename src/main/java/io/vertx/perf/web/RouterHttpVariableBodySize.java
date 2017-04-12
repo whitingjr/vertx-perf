@@ -36,7 +36,7 @@ public class RouterHttpVariableBodySize extends AbstractVerticle {
          if (equal){
             routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, TEXT_HTML);
             routingContext.response().putHeader(HttpHeaders.CONTENT_LENGTH, mlength);
-            routingContext.response().setStatusCode(200).end(m);
+            routingContext.response().setStatusCode(200).end(message);
 //            System.out.println("Non-Blocking Success");
          } else {
             routingContext.fail(new Exception("Server detected the request body does not match the expected length as content-length indicates."));
