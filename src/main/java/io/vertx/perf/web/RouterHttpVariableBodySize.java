@@ -28,7 +28,7 @@ public class RouterHttpVariableBodySize extends AbstractVerticle {
       Router router = Router.router(vertx);
       router.route().handler(BodyHandler.create());
       router.post("/nonblockingform").blockingHandler(routingContext -> {
-         String body = routingContext.getBodyAsString(UTF-8);
+         String body = routingContext.getBodyAsString(UTF_8);
          int size = body.length();
          int bs = Integer.parseInt(routingContext.request().getHeader(HttpHeaders.CONTENT_LENGTH));
          boolean equal = size == bs;
