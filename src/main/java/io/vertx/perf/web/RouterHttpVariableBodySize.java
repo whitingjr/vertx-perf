@@ -49,7 +49,7 @@ public class RouterHttpVariableBodySize extends AbstractVerticle {
          if (equal){
             handler.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html");
             handler.response().setStatusCode(200).end("<html><body><h1>Thank you for the message!</h1></body></html>");
-//            System.out.println("Blocking Success");
+            logger.fine("Blocking Success");
          } else {
             handler.fail(new Exception("Server detected the request body does not match the expected length as content-length indicates."));
             handler.next();
