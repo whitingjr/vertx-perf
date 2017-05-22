@@ -3,6 +3,7 @@ package io.vertx.perf.web;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import io.netty.util.ResourceLeakDetector;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
@@ -23,56 +24,50 @@ public class RouterHttpVariableBodySize extends AbstractVerticle {
       int port = Integer.getInteger("vertx.port", 8080);
       System.out.println("Host: " + host);
       System.out.println("Port: " + port);
+      String level = System.getProperty("io.netty.leakDetection.level", io.netty.util.ResourceLeakDetector.Level.DISABLED.name());
+      logger.info(String.format("Started with level[%1$s]", level));
+      
+      ResourceLeakDetector.setLevel(io.netty.util.ResourceLeakDetector.Level.valueOf(level));
 
       Router router = Router.router(vertx);
       router.route().handler(BodyHandler.create());
+      router.route().failureHandler(fh -> {
+          logger.severe("Failure:" + fh.failure().getMessage());
+          fh.response().putHeader("Content-Type", "text/html");
+          fh.response().setStatusCode(500).end(String.format("barf [%1$s]",fh.failure().getMessage()));
+       });
       router.post("/nonblockingform").blockingHandler(routingContext -> {
+         setExceptionHandlers(routingContext);
+         Buffer b = routingContext.getBody();
          String body = routingContext.getBodyAsString(UTF_8);
          int size = body.length();
-         int bs = Integer.parseInt(routingContext.request().getHeader(HttpHeaders.CONTENT_LENGTH));
+         int bs = Integer.parseInt(routingContext.request().getHeader("Content-Length"));
          boolean equal = size == bs;
          assert size == bs: String.format("Comparing the size of the body string size [%1$d] and content length [%2$d] showed a mismatch. They should be identical.",  size, body.length());
          if (equal){
-            routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, TEXT_HTML);
-            routingContext.response().setStatusCode(200).end(message);
+            routingContext.response().putHeader("Content-Type", TEXT_HTML);
+            routingContext.response().setStatusCode(200);
+            routingContext.response().end(message);
          } else {
             routingContext.fail(new Exception("Server detected the request body does not match the expected length as content-length indicates."));
             routingContext.next();
          }
-      }, false);
-      router.post("/blockingform").handler (handler -> {
-         Buffer b = handler.getBody();
-         int size = b.length();
-         int bs = Integer.parseInt(handler.request().getHeader(HttpHeaders.CONTENT_LENGTH));
-         boolean equal = size == bs; 
-         assert equal: String.format("Comparing the size of the body string size [%1$d] and content length [%2$d] showed a mismatch. They should be identical.",  size, b.length());
-         if (equal){
-            handler.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html");
-            handler.response().setStatusCode(200).end("<html><body><h1>Thank you for the message!</h1></body></html>");
-            logger.fine("Blocking Success");
-         } else {
-            handler.fail(new Exception("Server detected the request body does not match the expected length as content-length indicates."));
-            handler.next();
+         if (b.isDirectOrPooled()){
+            b.close();
          }
-      });
+      }, false);
 
-      router.route().failureHandler(fh -> {
-         System.out.println("Failure" + fh.failure().getMessage());
-         fh.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html");
-         fh.response().setStatusCode(500).end(String.format("barf [%1$s]",fh.failure().getMessage()));
-      });
       vertx.createHttpServer().requestHandler(router::accept).listen(port, host);
    }
 
    void setExceptionHandlers(RoutingContext ctx) {
-      ctx.request().setExpectMultipart(true);
+//      ctx.request().setExpectMultipart(true);
       ctx.request().exceptionHandler(this::exceptionHandler);
       ctx.response().exceptionHandler(this::exceptionHandler);
-      ctx.next();
+//      ctx.next();
    }
    
    void exceptionHandler(Throwable t){
-      logger.log(Level.WARNING, "bah something went wrong", t);
+      logger.log(Level.SEVERE, "bah something went wrong: "+t.getMessage(), t);
    }
-
 }
