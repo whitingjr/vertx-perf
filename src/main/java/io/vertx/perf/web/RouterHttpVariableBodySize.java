@@ -16,7 +16,7 @@ public class RouterHttpVariableBodySize extends AbstractVerticle {
    private static final Logger logger = Logger.getLogger(RouterHttpVariableBodySize.class.getName());
    private static final CharSequence UTF_8 = HttpHeaders.createOptimized("UTF-8");
 //   private static final CharSequence message = HttpHeaders.createOptimized("<html><body><h1>Thank you for the message!</h1></body></html>");
-   private static final Buffer message = 
+   private static final Buffer message = Buffer.buffer("<html><body><h1>Thank you for the message!</h1></body></html>");
 
    @Override
    public void start() throws Exception {
@@ -26,7 +26,7 @@ public class RouterHttpVariableBodySize extends AbstractVerticle {
       System.out.println("Port: " + port);
       String level = System.getProperty("io.netty.leakDetection.level", io.netty.util.ResourceLeakDetector.Level.DISABLED.name());
       logger.info(String.format("Started with level[%1$s]", level));
-      
+
       ResourceLeakDetector.setLevel(io.netty.util.ResourceLeakDetector.Level.valueOf(level));
 
       Router router = Router.router(vertx);
@@ -46,7 +46,7 @@ public class RouterHttpVariableBodySize extends AbstractVerticle {
          if (equal){
             routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpHeaders.TEXT_HTML);
             routingContext.response().setStatusCode(200);
-            routingContext.response().end();
+            routingContext.response().end(b.getBuffer(0, 1));
          } else {
             routingContext.fail(new Exception("Server detected the request body does not match the expected length as content-length indicates."));
             routingContext.next();
